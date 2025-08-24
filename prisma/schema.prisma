@@ -1,0 +1,206 @@
+// Grand Puppyverse Game Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Player (Kataya)
+model Player {
+  id        String   @id @default(cuid())
+  name      String   @default("Kataya")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Game Progress
+  level     Int      @default(1)
+  experience Int     @default(0)
+  coins     Int      @default(100)
+
+  // Relationships
+  puppies   Puppy[]
+  inventory InventoryItem[]
+  gameStats GameStats[]
+  triviaProgress TriviaProgress[]
+  spanishProgress SpanishProgress[]
+  unlockedZones UnlockedZone[]
+
+  @@map("players")
+}
+
+// Puppies (KK and Hailey)
+model Puppy {
+  id        String   @id @default(cuid())
+  name      String   // "KK" or "Hailey"
+  playerId  String
+  
+  // Personality & Stats
+  personality String // "energetic" or "calm"
+  happiness   Int      @default(100)
+  hunger      Int      @default(80)
+  energy      Int      @default(100)
+  
+  // Growth & Progression
+  ageStage    String   @default("baby") // "baby", "young", "adult"
+  age         Int      @default(0) // in days
+  
+  // Appearance
+  currentOutfit String?
+  currentAccessory String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@map("puppies")
+}
+
+// Game Zones (Yard, Living Room, Park, Playground)
+model GameZone {
+  id          String   @id @default(cuid())
+  name        String   // "Yard", "Living Room", "Park", "Playground"
+  description String?
+  unlockLevel Int      @default(1)
+  isUnlocked  Boolean  @default(false)
+  
+  unlockedBy UnlockedZone[]
+  
+  @@map("game_zones")
+}
+
+// Player's Unlocked Zones
+model UnlockedZone {
+  id       String @id @default(cuid())
+  playerId String
+  zoneId   String
+  unlockedAt DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  zone   GameZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, zoneId])
+  @@map("unlocked_zones")
+}
+
+// Trivia Questions
+model TriviaQuestion {
+  id          String   @id @default(cuid())
+  question    String
+  category    String   // "animals", "colors", "numbers", "everyday"
+  difficulty  Int      @default(1) // 1-5
+  correctAnswer String
+  
+  answers     TriviaAnswer[]
+  progress    TriviaProgress[]
+  
+  @@map("trivia_questions")
+}
+
+// Trivia Answer Options
+model TriviaAnswer {
+  id         String   @id @default(cuid())
+  questionId String
+  answer     String
+  isCorrect  Boolean
+  
+  question   TriviaQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@map("trivia_answers")
+}
+
+// Player's Trivia Progress
+model TriviaProgress {
+  id         String   @id @default(cuid())
+  playerId   String
+  questionId String
+  answered   Boolean  @default(false)
+  isCorrect  Boolean?
+  answeredAt DateTime?
+  
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  question TriviaQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questionId])
+  @@map("trivia_progress")
+}
+
+// Spanish Learning Content
+model SpanishLesson {
+  id          String   @id @default(cuid())
+  spanishWord String
+  englishWord String
+  category    String   // "colors", "animals", "objects", "sentences"
+  difficulty  Int      @default(1)
+  imageUrl    String?
+  audioUrl    String?
+  
+  progress    SpanishProgress[]
+  
+  @@map("spanish_lessons")
+}
+
+// Player's Spanish Learning Progress
+model SpanishProgress {
+  id         String   @id @default(cuid())
+  playerId   String
+  lessonId   String
+  mastered   Boolean  @default(false)
+  attempts   Int      @default(0)
+  lastAttempt DateTime?
+  
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  lesson SpanishLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, lessonId])
+  @@map("spanish_progress")
+}
+
+// Inventory Items (Food, Toys, Clothes, Decorations)
+model InventoryItem {
+  id        String   @id @default(cuid())
+  playerId  String
+  itemType  String   // "food", "toy", "clothing", "decoration"
+  name      String
+  quantity  Int      @default(1)
+  rarity    String   @default("common") // "common", "rare", "epic"
+  
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  
+  @@map("inventory_items")
+}
+
+// Game Statistics
+model GameStats {
+  id              String   @id @default(cuid())
+  playerId        String
+  
+  // Trivia Stats
+  triviaQuestionsAnswered Int @default(0)
+  triviaCorrectAnswers    Int @default(0)
+  
+  // Spanish Stats
+  spanishWordsLearned     Int @default(0)
+  spanishLessonsCompleted Int @default(0)
+  
+  // Puppy Stats
+  puppyInteractions       Int @default(0)
+  puppyFeedings           Int @default(0)
+  puppyPlaySessions       Int @default(0)
+  
+  // General Stats
+  totalPlayTime           Int @default(0) // in minutes
+  sessionsCompleted       Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId])
+  @@map("game_stats")
+}

@@ -1,0 +1,34 @@
+{
+  "name": "Grand Puppyverse - Kataya's Puppy Adventure",
+  "short_name": "Grand Puppyverse",
+  "description": "An educational and entertaining game where Kataya learns, plays, and takes care of her two puppies KK and Hailey.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3E8FF",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/puppy-kk-new.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/puppy-hailey-new.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["games", "education", "kids", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "serviceworker": "/sw.js"
+}
